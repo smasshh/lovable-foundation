@@ -12,22 +12,22 @@ const statusConfig: Record<TaskStatus, { label: string; icon: typeof Circle; cla
   'todo': {
     label: 'To Do',
     icon: Circle,
-    className: 'text-status-todo bg-status-todo/10',
+    className: 'text-status-todo bg-status-todo/10 border-status-todo/20',
   },
   'in-progress': {
     label: 'In Progress',
     icon: Clock,
-    className: 'text-status-progress bg-status-progress/10',
+    className: 'text-status-progress bg-status-progress/10 border-status-progress/20',
   },
   'done': {
     label: 'Done',
     icon: CheckCircle2,
-    className: 'text-status-done bg-status-done/10',
+    className: 'text-status-done bg-status-done/10 border-status-done/20',
   },
   'blocked': {
     label: 'Blocked',
     icon: XCircle,
-    className: 'text-status-blocked bg-status-blocked/10',
+    className: 'text-status-blocked bg-status-blocked/10 border-status-blocked/20',
   },
 };
 
@@ -38,7 +38,7 @@ export function TaskStatusBadge({ status, showLabel = true, className }: TaskSta
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium',
+        'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border',
         config.className,
         className
       )}
