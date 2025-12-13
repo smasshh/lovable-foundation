@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useProjects } from '@/hooks/useProjects';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const mainNavItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
@@ -29,15 +30,23 @@ export function AppSidebar() {
   const { data: projects } = useProjects();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { logout, user } = useAuth();
 
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-    toast({
-      title: 'Logged out',
-      description: 'You have been logged out successfully.',
-    });
-    navigate('/auth');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: 'Logged out',
+        description: 'You have been logged out successfully.',
+      });
+      navigate('/auth');
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to logout. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -119,6 +128,14 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-2 space-y-1">
+        {/* User info */}
+        {!isCollapsed && user && (
+          <div className="px-3 py-2 mb-2">
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{user.name}</p>
+            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+          </div>
+        )}
+        
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>

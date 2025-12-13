@@ -3,12 +3,15 @@ import { AppSidebar } from './AppSidebar';
 import { Button } from '@/components/ui/button';
 import { Bell, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const { user } = useAuth();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -31,7 +34,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
               </Button>
               <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                D
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
             </div>
           </header>
