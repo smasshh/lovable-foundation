@@ -1,41 +1,24 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { z } from 'zod';
-import { CheckSquare, Mail, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckSquare, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { loginSchema, signupSchema, LoginFormData, SignupFormData } from '@/lib/auth-validation';
-
-// Mock auth - will be replaced with Lovable Cloud
-const mockAuth = {
-  login: async (email: string, password: string) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    if (email === 'demo@example.com' && password === 'Password123') {
-      localStorage.setItem('auth_token', 'mock_jwt_token');
-      localStorage.setItem('user', JSON.stringify({ email, name: 'Demo User' }));
-      return { success: true };
-    }
-    throw new Error('Invalid email or password');
-  },
-  signup: async (email: string, password: string) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    if (email === 'demo@example.com') {
-      throw new Error('Email already registered');
-    }
-    localStorage.setItem('auth_token', 'mock_jwt_token');
-    localStorage.setItem('user', JSON.stringify({ email, name: email.split('@')[0] }));
-    return { success: true };
-  },
-};
+import { useAuth } from '@/contexts/AuthContext';
+import { loginSchema, signupSchema } from '@/lib/auth-validation';
+import { ApiError } from '@/lib/api-client';
 
 type AuthMode = 'login' | 'signup';
 
 export default function Auth() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { login, signup } = useAuth();
+  
   const [mode, setMode] = useState<AuthMode>('login');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,7 +26,7 @@ export default function Auth() {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({ email: '', password: '', confirmPassword: '' });
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     try {
       if (mode === 'login') {
         loginSchema.parse(loginData);
@@ -71,25 +54,52 @@ export default function Auth() {
     if (!validateForm()) return;
 
     setLoading(true);
+    setErrors({});
+
     try {
       if (mode === 'login') {
-        await mockAuth.login(loginData.email, loginData.password);
+        await login(loginData);
         toast({
           title: 'Welcome back!',
           description: 'You have successfully logged in.',
         });
       } else {
-        await mockAuth.signup(signupData.email, signupData.password);
+        await signup(signupData);
         toast({
           title: 'Account created!',
           description: 'Welcome to TaskFlow.',
         });
       }
-      navigate('/');
+      
+      // Redirect to the page they were trying to access, or home
+      const from = location.state?.from?.pathname || '/';
+      navigate(from, { replace: true });
     } catch (err) {
+      let errorMessage = 'Something went wrong. Please try again.';
+      
+      if (err instanceof ApiError) {
+        errorMessage = err.message;
+        
+        // Handle field-specific errors from API
+        if (err.errors) {
+          const fieldErrors: Record<string, string> = {};
+          Object.entries(err.errors).forEach(([field, messages]) => {
+            if (Array.isArray(messages) && messages.length > 0) {
+              fieldErrors[field] = messages[0];
+            }
+          });
+          if (Object.keys(fieldErrors).length > 0) {
+            setErrors(fieldErrors);
+            return;
+          }
+        }
+      } else if (err instanceof z.ZodError) {
+        errorMessage = 'Please check your input and try again.';
+      }
+
       toast({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Something went wrong',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -100,6 +110,13 @@ export default function Auth() {
   const switchMode = () => {
     setMode(mode === 'login' ? 'signup' : 'login');
     setErrors({});
+  };
+
+  const handleForgotPassword = () => {
+    toast({
+      title: 'Password Reset',
+      description: 'Please contact your administrator to reset your password.',
+    });
   };
 
   return (
@@ -164,14 +181,19 @@ export default function Auth() {
                 placeholder="you@example.com"
                 value={mode === 'login' ? loginData.email : signupData.email}
                 onChange={(e) => {
+                  const value = e.target.value;
                   if (mode === 'login') {
-                    setLoginData({ ...loginData, email: e.target.value });
+                    setLoginData(prev => ({ ...prev, email: value }));
                   } else {
-                    setSignupData({ ...signupData, email: e.target.value });
+                    setSignupData(prev => ({ ...prev, email: value }));
+                  }
+                  if (errors.email) {
+                    setErrors(prev => ({ ...prev, email: '' }));
                   }
                 }}
                 error={!!errors.email}
                 disabled={loading}
+                autoComplete="email"
               />
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email}</p>
@@ -185,14 +207,19 @@ export default function Auth() {
                 placeholder={mode === 'login' ? 'Enter your password' : 'Create a strong password'}
                 value={mode === 'login' ? loginData.password : signupData.password}
                 onChange={(e) => {
+                  const value = e.target.value;
                   if (mode === 'login') {
-                    setLoginData({ ...loginData, password: e.target.value });
+                    setLoginData(prev => ({ ...prev, password: value }));
                   } else {
-                    setSignupData({ ...signupData, password: e.target.value });
+                    setSignupData(prev => ({ ...prev, password: value }));
+                  }
+                  if (errors.password) {
+                    setErrors(prev => ({ ...prev, password: '' }));
                   }
                 }}
                 error={!!errors.password}
                 disabled={loading}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               />
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password}</p>
@@ -206,9 +233,15 @@ export default function Auth() {
                   id="confirmPassword"
                   placeholder="Confirm your password"
                   value={signupData.confirmPassword}
-                  onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
+                  onChange={(e) => {
+                    setSignupData(prev => ({ ...prev, confirmPassword: e.target.value }));
+                    if (errors.confirmPassword) {
+                      setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                    }
+                  }}
                   error={!!errors.confirmPassword}
                   disabled={loading}
+                  autoComplete="new-password"
                 />
                 {errors.confirmPassword && (
                   <p className="text-sm text-destructive">{errors.confirmPassword}</p>
@@ -232,7 +265,7 @@ export default function Auth() {
               <button 
                 type="button"
                 className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => toast({ title: 'Coming soon', description: 'Password reset will be available with Lovable Cloud' })}
+                onClick={handleForgotPassword}
               >
                 Forgot your password?
               </button>
@@ -249,13 +282,6 @@ export default function Auth() {
               >
                 {mode === 'login' ? 'Sign up' : 'Sign in'}
               </button>
-            </p>
-          </div>
-
-          {/* Demo credentials hint */}
-          <div className="mt-6 p-4 rounded-lg bg-secondary/50 border border-border/50">
-            <p className="text-xs text-muted-foreground text-center">
-              <strong>Demo:</strong> demo@example.com / Password123
             </p>
           </div>
         </div>
