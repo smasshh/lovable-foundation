@@ -24,7 +24,7 @@ export default function Auth() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ email: '', password: '', confirmPassword: '' });
+  const [signupData, setSignupData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
 
   const validateForm = (): boolean => {
     try {
@@ -173,6 +173,30 @@ export default function Auth() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {mode === 'signup' && (
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={signupData.name}
+                  onChange={(e) => {
+                    setSignupData(prev => ({ ...prev, name: e.target.value }));
+                    if (errors.name) {
+                      setErrors(prev => ({ ...prev, name: '' }));
+                    }
+                  }}
+                  error={!!errors.name}
+                  disabled={loading}
+                  autoComplete="name"
+                />
+                {errors.name && (
+                  <p className="text-sm text-destructive">{errors.name}</p>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
