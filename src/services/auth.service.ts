@@ -56,6 +56,7 @@ class AuthService {
     const response = await apiClient.post<AuthResponse>(
       '/auth/signup',
       {
+        name: validated.name,
         email: validated.email,
         password: validated.password,
       },

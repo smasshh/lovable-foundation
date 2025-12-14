@@ -19,6 +19,11 @@ const statusConfig: Record<TaskStatus, { label: string; icon: typeof Circle; cla
     icon: Clock,
     className: 'text-status-progress bg-status-progress/10 border-status-progress/20',
   },
+  'in_progress': {
+    label: 'In Progress',
+    icon: Clock,
+    className: 'text-status-progress bg-status-progress/10 border-status-progress/20',
+  },
   'done': {
     label: 'Done',
     icon: CheckCircle2,

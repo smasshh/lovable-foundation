@@ -1,6 +1,6 @@
 // Domain types for the task management application
 
-export type TaskStatus = 'todo' | 'in-progress' | 'done' | 'blocked';
+export type TaskStatus = 'todo' | 'in-progress' | 'done' | 'blocked' | 'in_progress';
 export type TaskPriority = 'low' | 'medium' | 'high';
 
 export interface Task {
