@@ -6,9 +6,11 @@ interface TaskListProps {
   tasks: Task[];
   className?: string;
   emptyMessage?: string;
+  onEdit?: (task: Task) => void;
+  onDelete?: (task: Task) => void;
 }
 
-export function TaskList({ tasks, className, emptyMessage = 'No tasks yet' }: TaskListProps) {
+export function TaskList({ tasks, className, emptyMessage = 'No tasks yet', onEdit, onDelete }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -39,7 +41,7 @@ export function TaskList({ tasks, className, emptyMessage = 'No tasks yet' }: Ta
           key={task.id}
           style={{ animationDelay: `${index * 50}ms` }}
         >
-          <TaskCard task={task} />
+          <TaskCard task={task} onEdit={onEdit} onDelete={onDelete} />
         </div>
       ))}
     </div>

@@ -9,6 +9,10 @@ interface TaskPriorityBadgeProps {
 }
 
 const priorityConfig: Record<TaskPriority, { label: string; className: string }> = {
+  'urgent': {
+    label: 'Urgent',
+    className: 'text-destructive',
+  },
   'high': {
     label: 'High',
     className: 'text-priority-high',

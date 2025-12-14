@@ -1,4 +1,4 @@
-import { LayoutDashboard, CheckSquare, Settings, Plus, LogOut } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Settings, LogOut } from 'lucide-react';
 import { NavLink as RouterNavLink, useNavigate } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import {
@@ -14,9 +14,9 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
 import { useProjects } from '@/hooks/useProjects';
 import { useToast } from '@/hooks/use-toast';
+import { CreateProjectModal } from '@/features/projects/components/CreateProjectModal';
 import { useAuth } from '@/contexts/AuthContext';
 
 const mainNavItems = [
@@ -95,11 +95,7 @@ export function AppSidebar() {
             <SidebarGroupLabel className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider p-0">
               Projects
             </SidebarGroupLabel>
-            {!isCollapsed && (
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
-                <Plus className="h-3.5 w-3.5" />
-              </Button>
-            )}
+            {!isCollapsed && <CreateProjectModal />}
           </div>
           <SidebarGroupContent>
             <SidebarMenu>
