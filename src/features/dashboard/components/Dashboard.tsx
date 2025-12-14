@@ -1,9 +1,8 @@
-import { CheckSquare, Clock, Target, TrendingUp } from 'lucide-react';
+import { CheckSquare, Clock, Target, TrendingUp, Plus } from 'lucide-react';
 import { StatsCard } from './StatsCard';
 import { TaskList } from '@/features/tasks/components/TaskList';
 import { useTasks } from '@/hooks/useTasks';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { SkeletonStats, SkeletonList } from '@/components/ui/skeleton';
 
 export function Dashboard() {
@@ -11,9 +10,9 @@ export function Dashboard() {
 
   const stats = {
     total: tasks?.length ?? 0,
-    inProgress: tasks?.filter(t => t.status === 'in-progress').length ?? 0,
-    completed: tasks?.filter(t => t.status === 'done').length ?? 0,
-    highPriority: tasks?.filter(t => t.priority === 'high').length ?? 0,
+    inProgress: tasks?.filter(t => t.status === 'in_progress').length ?? 0,
+    completed: tasks?.filter(t => t.status === 'completed').length ?? 0,
+    highPriority: tasks?.filter(t => t.priority === 'high' || t.priority === 'urgent').length ?? 0,
   };
 
   const recentTasks = tasks?.slice(0, 5) ?? [];

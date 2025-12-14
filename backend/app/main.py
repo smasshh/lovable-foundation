@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
-from app.routes import auth_router, tasks_router
+from app.routes import auth_router, tasks_router, projects_router
 from app.utils.exceptions import (
     validation_exception_handler,
     integrity_error_handler,
@@ -41,6 +41,7 @@ app.add_exception_handler(Exception, generic_exception_handler)
 
 # Register routers
 app.include_router(auth_router)
+app.include_router(projects_router)
 app.include_router(tasks_router)
 
 

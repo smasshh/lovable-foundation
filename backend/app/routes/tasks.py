@@ -7,11 +7,11 @@ from app.schemas.task import TaskCreate, TaskUpdate, TaskResponse
 from app.services.task_service import TaskService
 from app.dependencies.auth import get_current_user
 
-router = APIRouter(prefix="/tasks", tags=["Tasks"])
+router = APIRouter(tags=["Tasks"])
 
 
-@router.get("", response_model=List[TaskResponse])
-def get_tasks(
+@router.get("/tasks", response_model=List[TaskResponse])
+def get_all_tasks(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -21,19 +21,32 @@ def get_tasks(
     return TaskService.get_user_tasks(db, current_user)
 
 
-@router.post("", response_model=TaskResponse)
+@router.get("/projects/{project_id}/tasks", response_model=List[TaskResponse])
+def get_project_tasks(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get all tasks for a specific project.
+    """
+    return TaskService.get_project_tasks(db, current_user, project_id)
+
+
+@router.post("/projects/{project_id}/tasks", response_model=TaskResponse)
 def create_task(
+    project_id: str,
     task_data: TaskCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
-    Create a new task for the authenticated user.
+    Create a new task in a project.
     """
-    return TaskService.create_task(db, current_user, task_data)
+    return TaskService.create_task(db, current_user, project_id, task_data)
 
 
-@router.put("/{task_id}", response_model=TaskResponse)
+@router.put("/tasks/{task_id}", response_model=TaskResponse)
 def update_task(
     task_id: str,
     task_data: TaskUpdate,
@@ -46,7 +59,7 @@ def update_task(
     return TaskService.update_task(db, current_user, task_id, task_data)
 
 
-@router.delete("/{task_id}")
+@router.delete("/tasks/{task_id}")
 def delete_task(
     task_id: str,
     db: Session = Depends(get_db),
